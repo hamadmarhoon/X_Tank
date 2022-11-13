@@ -1,3 +1,12 @@
+/**
+ * This is a tank class where we create a tank object.
+ * It has a lot of functionalities to help ease the use
+ * of this class. it is also serializable so we can send tank
+ * objects between server and clients. 
+ * 
+ * This Class was implemented by Abdullah Alkhamis.
+ */
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,7 +43,12 @@ public class Tank implements Serializable {
 	private int barrelY1 = 25;
 	private int barrelX2 = 25;
 	private int barrelY2 = -15;
-
+	
+	/*
+	 * Tank constructor takes the coordiante the tank will be created
+	 * and the direction its facing as well the color of the tank and
+	 * the tank's own bullets
+	 */
 	public Tank(int x, int y, int dir) {
 		xCoord = x;
 		yCoord = y;
@@ -43,18 +57,26 @@ public class Tank implements Serializable {
 		bullet = new Bullet(x, y);
 	}
 
+	/**
+	 * This gets the tanks uniq identifier to 
+	 * diffrenciate between tanks.
+	 */
 	public UUID getUID() {
 		return uuid;
 	}
 	
+	/**
+	 * This boolean determines if the 
+	 * tank got shot.
+	 */
 	public void IGotShot() {
 		this.gotShot = true;
 	}
 	
-	public boolean amIShot() {
-		return this.gotShot;
-	}
-
+	/**
+	 * This is a random color generator for the tank.
+	 * it returns a list of rgb values.
+	 */
 	private List<Integer> generateColor() {
 		Random rand = new Random();
 		int r = rand.nextInt(100, 256);
@@ -68,44 +90,73 @@ public class Tank implements Serializable {
 		return rgbs;
 	}
 
+	/**
+	 * This is a setter for the tank's x-coordinate
+	 */
 	public void setX(int x) {
 		this.xCoord = x;
 	}
 	
+	/**
+	 * This is a setter for the tank's y-coordinate
+	 */
+	public void setY(int y) {
+		this.yCoord = y;
+	}
+	
+	/**
+	 * This is a setter fot the tank's direction
+	 */
+	public void setDirection(int dir) {
+		this.direction = dir;
+	}
+	
+	/**
+	 * This is a setter for the bullet coordinates
+	 */
 	public void setBullet() {
 		bullet.setX(xCoord);
 		bullet.setY(yCoord);
 	}
 	
+	/**
+	 * This gets the tank's bullet object
+	 */
 	public Bullet getBullet() {
 		return bullet;
 	}
 	
-	public void setDirection(int dir) {
-		this.direction = dir;
-	}
-	
+	/**
+	 * This moves the bullet object
+	 */
 	public void incrementBullet(int num, ArrayList<Tank> otherTanks) {
 		this.bullet.increment(num, otherTanks);
 	}
 	
+	/**
+	 * This sets the bullet direction.
+	 */
 	public void setBulletDirection() {
-		System.out.println(direction);
 		this.bullet.setDirection(direction);
 	}
 
-	public void setY(int y) {
-		this.yCoord = y;
-	}
-
+	/**
+	 * This gets the tank's x-coordinate
+	 */
 	public int getX() {
 		return xCoord;
 	}
 
+	/**
+	 * This gets the tank's y-coordinate
+	 */
 	public int getY() {
 		return yCoord;
 	}
-
+	
+	/**
+	 * This gets the exact center of the tank object
+	 */
 	public List<Integer> getCenter() {
 		List<Integer> coords = new ArrayList<Integer>();
 		if (getDirection() == 0) {
@@ -123,23 +174,40 @@ public class Tank implements Serializable {
 		}
 		return coords;
 	}
-
+	
+	/**
+	 * This gets the tank's direction.
+	 */
 	public int getDirection() {
 		return direction;
 	}
 
+	/**
+	 * This gets the color of the tank represented as 
+	 * a list of rgb values.
+	 */
 	public List<Integer> getColor() {
 		return color;
 	}
 
+	/**
+	 * This moves the tank on the x-axis
+	 */
 	public void incrementX(int num) {
 		this.xCoord += num;
 	}
 
+	/**
+	 * This moves the tank on the y-axis
+	 */
 	public void incrementY(int num) {
 		this.yCoord += num;
 	}
 
+	/**
+	 * This inverts the coords of the tank 
+	 * to help with calulations
+	 */
 	private void invertCoords() {
 		int temp = getX();
 		this.xCoord = getY();
@@ -165,7 +233,12 @@ public class Tank implements Serializable {
 		}
 		return false;
 	}
-
+	
+	/**
+	 * This function determines if the current
+	 * instance of the tank class got shot by 
+	 * another tank.
+	 */
 	public boolean gotShot(Tank shootingTank) {
 		int shootingX = shootingTank.getCenter().get(0);
 		int shootingY = shootingTank.getCenter().get(1);
@@ -187,6 +260,10 @@ public class Tank implements Serializable {
 		return false;
 	}
 
+	/**
+	 * This function detemines if the tank is out
+	 * of bounds.
+	 */
 	public boolean outOfBounds(Canvas canvas) {
 		int centerX = getCenter().get(0);
 		int centerY = getCenter().get(1);
@@ -200,7 +277,11 @@ public class Tank implements Serializable {
 		}
 		return false;
 	}
-
+	
+	/**
+	 * This sets the tank fields to help the UI with drawing
+	 * the tank and in all four direction.
+	 */
 	public void setTankFields(int bxd, int byd, int tWidth, int tHeight, int oxp, int oyp, int bx1, int by1, int bx2,
 			int by2) {
 		baseXDiff = bxd;
@@ -217,6 +298,10 @@ public class Tank implements Serializable {
 		barrelY2 = by2;
 	}
 
+	/**
+	 * all the getters below are used in the tank UI 
+	 * to draw each tank object;
+	 */
 	public int getBaseX() {
 		return baseXDiff;
 	}
@@ -257,6 +342,10 @@ public class Tank implements Serializable {
 		return barrelY2;
 	}
 	
+	/**
+	 * This method gets the bounds of each tank
+	 * to aid with collision detection.
+	 */
     public Rectangle getBounds() {
     	if (getDirection() == 0 || getDirection() == 2) {
     		return new Rectangle(getX(), getY(), 85, 95);
@@ -264,7 +353,10 @@ public class Tank implements Serializable {
     		return new Rectangle(getX(), getY(), 95, 95);
     	}
     }
-
+    
+    /**
+     * This method changes the direction of the tank object.
+     */
 	public void changeDirection(KeyEvent e) {
 		if (e.keyCode == SWT.ARROW_UP) {
 			this.direction = 0;

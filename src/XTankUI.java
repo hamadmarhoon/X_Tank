@@ -1,19 +1,25 @@
 
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.*;
-import org.eclipse.swt.graphics.*;
-import org.eclipse.swt.layout.*;
-import org.eclipse.swt.widgets.*;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Random;
-import java.util.Set;
 
-import javax.xml.crypto.dsig.keyinfo.KeyValue;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.events.KeyListener;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.MouseListener;
+import org.eclipse.swt.events.PaintEvent;
+import org.eclipse.swt.events.PaintListener;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.GC;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.widgets.Canvas;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Shell;
 
 public class XTankUI {
 	// The location and direction of the "tank"
@@ -24,7 +30,9 @@ public class XTankUI {
 	private Canvas canvas;
 	private Display display;
 	private Shell shell;
-	
+
+	private Bullet bullet;
+
 	int tankID;
 	ObjectInputStream in;
 	ObjectOutputStream out;
@@ -34,9 +42,43 @@ public class XTankUI {
 		this.in = in;
 		this.out = out;
 		this.otherTanks = new ArrayList<Tank>();
-		this.tank = new Tank(300, 300, 1);
+		this.tank = new Tank(getRandomX(), getRandomY(), getRandomDir());
+		this.bullet = new Bullet(0, 0);
+		if (getTank().getDirection() == 0) {
+			getTank().setTankFields(0, 0, 50, 100, 5, 25, 25, 25, 25, -15);
+		} else if (getTank().getDirection() == 1) {
+			getTank().setTankFields(25, -25, 100, 50, 9, 30, 50, 50, 90, 50);
+		} else if (getTank().getDirection() == 2) {
+			getTank().setTankFields(0, 0, 50, 100, 5, 35, 25, 75, 25, 115);
+		} else {
+			getTank().setTankFields(25, -25, 100, 50, 0, 30, 0, 50, -40, 50);
+		}
+	} 
+	
+	private int getRandomX() {
+		Random rand = new Random();
+		int x = rand.nextInt(50, 550);
+		return x;
 	}
 	
+	private int getRandomY() {
+		Random rand = new Random();
+		int y = rand.nextInt(50, 550);
+		return y;
+	}
+	
+	private int getRandomDir() {
+		Random rand = new Random();
+		int dir = rand.nextInt(0, 4);
+		return dir;
+	}
+
+	private void tankX(int num) {
+		getTank().incrementX(num);
+		if (checkCollisions()) {
+			getTank().incrementX(-num);
+		}
+	}
 	private void tankGotShot() {
 		this.tank.IGotShot();
 	}
@@ -44,17 +86,10 @@ public class XTankUI {
 		return this.tank;
 	}
 
-	private void tankX(int num) {
-		this.tank.incrementX(num);
-		if (checkCollisions()) {
-			this.tank.incrementX(-num);
-		}
-	}
-
 	private void tankY(int num) {
-		this.tank.incrementY(num);
+		getTank().incrementY(num);
 		if (checkCollisions()) {
-			this.tank.incrementX(-num);
+			getTank().incrementY(-num);
 		}
 	}
 
@@ -140,9 +175,7 @@ public class XTankUI {
 					}
 				}
 			}
-
 			canvas.redraw();
-
 		});
 
 		canvas.addMouseListener(new MouseListener() {
@@ -180,6 +213,7 @@ public class XTankUI {
 				} else if (e.keyCode == SWT.SPACE) {
 					setBulletDirection();
 					setBulletCoords();
+				} else if (e.keyCode == SWT.SPACE) {
 					canvas.addPaintListener(new PaintListener() {
 						public void paintControl(PaintEvent event) {
 							// Set the color of the ball
@@ -220,7 +254,6 @@ public class XTankUI {
 
 			out.flush();
 		} catch (IOException ex) {
-			ex.printStackTrace();
 			System.out.println("The server did not respond (initial write).");
 		}
 		Runnable runnable = new Runner();
@@ -247,12 +280,15 @@ public class XTankUI {
 	}
 
 	private boolean checkCollisions() {
+		boolean check = false;
 		for (int i = 0; i < getOtherTanks().size(); i++) {
-			boolean check = tank.collision(getOtherTanks().get(i));
-			if (check == true) {
-				return true;
+			if (!tank.getUID().equals(getOtherTanks().get(i).getUID())) {
+				check = tank.getBounds().intersects((getOtherTanks().get(i).getBounds()));
+				if (check == true) {
+
+					return true;
+				}
 			}
-			System.out.println(check);
 		}
 		return false;
 	}

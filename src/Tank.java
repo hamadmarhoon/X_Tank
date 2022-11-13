@@ -3,10 +3,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicLong;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Canvas;
 
 public class Tank implements Serializable {
@@ -18,7 +18,7 @@ public class Tank implements Serializable {
 	private Bullet bullet;
 
 	UUID uuid = UUID.randomUUID();
-	
+
 	// tank body
 	private int baseXDiff = 0;
 	private int baseYDiff = 0;
@@ -252,73 +252,14 @@ public class Tank implements Serializable {
 	public int getBarrelY2() {
 		return barrelY2;
 	}
-
-	public boolean collision(Tank enemyTank) {
-		if (getUID().equals(enemyTank.getUID())) {
-			return false;
-		}
-		int minX;
-		int maxX;
-		int minY;
-		int maxY;
-		int enemyMinX;
-		int enemyMaxX;
-		int enemyMinY;
-		int enemyMaxY;
-
-		if (getDirection() == 0) {
-			minY = getCenter().get(1) - 50;
-			maxY = getCenter().get(1) + 70;
-			minX = getCenter().get(0) - 25;
-			maxX = getCenter().get(0) + 25;
-		} else if (getDirection() == 1) {
-			minY = getCenter().get(1) - 25;
-			maxY = getCenter().get(1) + 25;
-			minX = getCenter().get(0) - 50;
-			maxX = getCenter().get(0) + 70;
-		} else if (getDirection() == 2) {
-			minY = getCenter().get(1) + 50;
-			maxY = getCenter().get(1) - 70;
-			minX = getCenter().get(0) + 25;
-			maxX = getCenter().get(0) - 25;
-		} else {
-			minY = getCenter().get(1) - 25;
-			maxY = getCenter().get(1) + 25;
-			minX = getCenter().get(0) + 50;
-			maxX = getCenter().get(0) - 70;
-		}
-
-		if (enemyTank.getDirection() == 0) {
-			enemyMinY = enemyTank.getCenter().get(1) - 50;
-			enemyMaxY = enemyTank.getCenter().get(1) + 70;
-			enemyMinX = enemyTank.getCenter().get(0) - 25;
-			enemyMaxX = enemyTank.getCenter().get(0) + 25;
-		} else if (enemyTank.getDirection() == 1) {
-			enemyMinY = enemyTank.getCenter().get(1) - 25;
-			enemyMaxY = enemyTank.getCenter().get(1) + 25;
-			enemyMinX = enemyTank.getCenter().get(0) - 50;
-			enemyMaxX = enemyTank.getCenter().get(0) + 70;
-		} else if (enemyTank.getDirection() == 2) {
-			enemyMinY = enemyTank.getCenter().get(1) + 50;
-			enemyMaxY = enemyTank.getCenter().get(1) - 70;
-			enemyMinX = enemyTank.getCenter().get(0) + 25;
-			enemyMaxX = enemyTank.getCenter().get(0) - 25;
-		} else {
-			enemyMinY = enemyTank.getCenter().get(1) - 25;
-			enemyMaxY = enemyTank.getCenter().get(1) + 25;
-			enemyMinX = enemyTank.getCenter().get(0) + 50;
-			enemyMaxX = enemyTank.getCenter().get(0) - 70;
-		}
-		
-		
-		if (((enemyMaxY == maxY || enemyMaxY == minY) && (enemyMaxX == maxX || enemyMaxX == minX))
-				|| ((enemyMinY == maxY || enemyMinY == minY) && (enemyMinX == maxX || enemyMinX == minX))
-				|| ((enemyMaxY == maxX || enemyMaxY == minX) && (enemyMaxX == maxY || enemyMaxX == minY))
-				|| ((enemyMinY == maxX || enemyMinY == minX) && (enemyMinX == maxY || enemyMinX == minY))) {
-			return true;
-		}
-		return false;
-	}
+	
+    public Rectangle getBounds() {
+    	if (getDirection() == 0 || getDirection() == 2) {
+    		return new Rectangle(getX(), getY(), 85, 95);
+    	} else {
+    		return new Rectangle(getX(), getY(), 95, 95);
+    	}
+    }
 
 	public void changeDirection(KeyEvent e) {
 		if (e.keyCode == SWT.ARROW_UP) {

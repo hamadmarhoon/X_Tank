@@ -73,6 +73,10 @@ public class Tank implements Serializable {
 		this.gotShot = true;
 	}
 	
+	public boolean amIShot() {
+		return this.gotShot;
+	}
+	
 	/**
 	 * This is a random color generator for the tank.
 	 * it returns a list of rgb values.

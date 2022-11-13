@@ -15,7 +15,8 @@ public class Tank implements Serializable {
 	private int yCoord;
 	private int direction;
 	private List<Integer> color;
-	
+	private Bullet bullet;
+
 	UUID uuid = UUID.randomUUID();
 	
 	// tank body
@@ -23,7 +24,7 @@ public class Tank implements Serializable {
 	private int baseYDiff = 0;
 	private int tankWidth = 50;
 	private int tankHeight = 100;
-
+	private boolean gotShot;
 	// tank oval
 	private int ovalXPos = 5;
 	private int ovalYPos = 25;
@@ -34,16 +35,20 @@ public class Tank implements Serializable {
 	private int barrelX2 = 25;
 	private int barrelY2 = -15;
 
-
 	public Tank(int x, int y, int dir) {
 		xCoord = x;
 		yCoord = y;
 		direction = dir;
 		color = generateColor();
+		bullet = new Bullet(x, y);
 	}
-	
+
 	public UUID getUID() {
 		return uuid;
+	}
+	
+	public void IGotShot() {
+		this.gotShot = true;
 	}
 
 	private List<Integer> generateColor() {
@@ -61,6 +66,28 @@ public class Tank implements Serializable {
 
 	public void setX(int x) {
 		this.xCoord = x;
+	}
+	
+	public void setBullet() {
+		bullet.setX(xCoord);
+		bullet.setY(yCoord);
+	}
+	
+	public Bullet getBullet() {
+		return bullet;
+	}
+	
+	public void setDirection(int dir) {
+		this.direction = dir;
+	}
+	
+	public void incrementBullet(int num, ArrayList<Tank> otherTanks) {
+		this.bullet.increment(num, otherTanks);
+	}
+	
+	public void setBulletDirection() {
+		System.out.println(direction);
+		this.bullet.setDirection(direction);
 	}
 
 	public void setY(int y) {
@@ -169,9 +196,9 @@ public class Tank implements Serializable {
 		}
 		return false;
 	}
-	
-	public void setTankFields(int bxd, int byd, int tWidth, int tHeight, int oxp, int oyp, int bx1, int by1,
-			int bx2, int by2) {
+
+	public void setTankFields(int bxd, int byd, int tWidth, int tHeight, int oxp, int oyp, int bx1, int by1, int bx2,
+			int by2) {
 		baseXDiff = bxd;
 		baseYDiff = byd;
 		tankWidth = tWidth;
@@ -185,47 +212,47 @@ public class Tank implements Serializable {
 		barrelX2 = bx2;
 		barrelY2 = by2;
 	}
-	
+
 	public int getBaseX() {
 		return baseXDiff;
 	}
-	
+
 	public int getBaseY() {
 		return baseYDiff;
 	}
-	
+
 	public int getTankWidth() {
 		return tankWidth;
 	}
-	
+
 	public int getTankHeight() {
 		return tankHeight;
 	}
-	
+
 	public int getOvalXPosition() {
 		return ovalXPos;
 	}
-	
+
 	public int getOvalYPosition() {
 		return ovalYPos;
 	}
-	
+
 	public int getBarrelX1() {
 		return barrelX1;
 	}
-	
+
 	public int getBarrelY1() {
 		return barrelY1;
 	}
-	
+
 	public int getBarrelX2() {
 		return barrelX2;
 	}
-	
+
 	public int getBarrelY2() {
 		return barrelY2;
 	}
-	
+
 	public boolean collision(Tank enemyTank) {
 		if (getUID().equals(enemyTank.getUID())) {
 			return false;
@@ -238,7 +265,7 @@ public class Tank implements Serializable {
 		int enemyMaxX;
 		int enemyMinY;
 		int enemyMaxY;
-		
+
 		if (getDirection() == 0) {
 			minY = getCenter().get(1) - 50;
 			maxY = getCenter().get(1) + 70;
@@ -260,7 +287,7 @@ public class Tank implements Serializable {
 			minX = getCenter().get(0) + 50;
 			maxX = getCenter().get(0) - 70;
 		}
-		
+
 		if (enemyTank.getDirection() == 0) {
 			enemyMinY = enemyTank.getCenter().get(1) - 50;
 			enemyMaxY = enemyTank.getCenter().get(1) + 70;
@@ -282,13 +309,14 @@ public class Tank implements Serializable {
 			enemyMinX = enemyTank.getCenter().get(0) + 50;
 			enemyMaxX = enemyTank.getCenter().get(0) - 70;
 		}
-	
-		  if (((enemyMaxY == maxY || enemyMaxY == minY) && (enemyMaxX == maxX || enemyMaxX == minX)) || 
-		            ((enemyMinY == maxY || enemyMinY == minY) && (enemyMinX == maxX || enemyMinX == minX)) ||
-		            ((enemyMaxY == maxX || enemyMaxY == minX) && (enemyMaxX == maxY || enemyMaxX == minY)) ||
-		            ((enemyMinY == maxX || enemyMinY == minX) && (enemyMinX == maxY || enemyMinX == minY))) {
-		            return true;
-		        }
+		
+		
+		if (((enemyMaxY == maxY || enemyMaxY == minY) && (enemyMaxX == maxX || enemyMaxX == minX))
+				|| ((enemyMinY == maxY || enemyMinY == minY) && (enemyMinX == maxX || enemyMinX == minX))
+				|| ((enemyMaxY == maxX || enemyMaxY == minX) && (enemyMaxX == maxY || enemyMaxX == minY))
+				|| ((enemyMinY == maxX || enemyMinY == minX) && (enemyMinX == maxY || enemyMinX == minY))) {
+			return true;
+		}
 		return false;
 	}
 

@@ -1,8 +1,11 @@
 /**
  * This is the XTankUI Class where we create the user interface and
- * and draw the tanks from all clients.
+ * and draw the tanks from all clients. it uses multiple functions
+ * from the Tank class to aid with drawing and logic.
  * 
+ * This class was implemented by both Hamad Marhoon and Abdullah Alkhamis
  */
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -18,7 +21,6 @@ import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Display;
@@ -43,12 +45,9 @@ public class XTankUI {
 
 	/**
 	 * The constructor creates a tank object and bullet object
-	 * 
-	 * @param in
-	 * @param out
-	 * @param initialX
-	 * @param initialY
-	 * @throws IOException
+	 * and sets the tank fields to to initilize drawing location 
+	 * and direction. It also initiates the ways of communication between
+	 * to and from the server.
 	 */
 	public XTankUI(ObjectInputStream in, ObjectOutputStream out, int initialX, int initialY) throws IOException {
 		this.in = in;
@@ -65,59 +64,91 @@ public class XTankUI {
 		} else {
 			getTank().setTankFields(25, -25, 100, 50, 0, 30, 0, 50, -40, 50);
 		}
-	} 
+	}
 	
+	/**
+	 * This gets a random x-coordinate to draw the tank
+	 */
 	private int getRandomX() {
 		Random rand = new Random();
 		int x = rand.nextInt(50, 550);
 		return x;
 	}
 	
+	/**
+	 * This gets a random y-coordinate to draw the tank
+	 */
 	private int getRandomY() {
 		Random rand = new Random();
 		int y = rand.nextInt(50, 550);
 		return y;
 	}
-	
+
+	/**
+	 * This gets a random direction to draw the tank
+	 */
 	private int getRandomDir() {
 		Random rand = new Random();
 		int dir = rand.nextInt(0, 4);
 		return dir;
 	}
 
+	/**
+	 * This implement conditional moving and collision checking for x-coordinate
+	 */
 	private void tankX(int num) {
 		getTank().incrementX(num);
 		if (checkCollisions()) {
 			getTank().incrementX(-num);
 		}
 	}
-	private void tankGotShot() {
-		this.tank.IGotShot();
-	}
-	private Tank getTank() {
-		return this.tank;
-	}
 
+	/**
+	 * This implement conditional moving and collision checking for x-coordinate
+	 */
 	private void tankY(int num) {
 		getTank().incrementY(num);
 		if (checkCollisions()) {
 			getTank().incrementY(-num);
 		}
 	}
+	
+	private void tankGotShot() {
+		this.tank.IGotShot();
+	}
 
+	/**
+	 * This gets the tank instance that invoked this UI
+	 */
+	private Tank getTank() {
+		return this.tank;
+	}
+
+	/**
+	 * This sends the tank object to the server
+	 */
 	private void writeTank() throws IOException {
 		this.out.reset();
 		this.out.writeObject(getTank());
 	}
-	
+
+	/**
+	 * This increments the Bullet object
+	 */
 	public void incrementBullet(int num) {
 		this.tank.incrementBullet(num, otherTanks);
 	}
-	
+
+	/**
+	 * This gets the bullet object
+	 */
 	public Bullet getBullet() {
 		return this.tank.getBullet();
 	}
-	
+
+	/**
+	 * This method implements the bullet animations.
+	 */
 	public void animate() {
 		incrementBullet(10);
 		int xCoord = getBullet().getX();
@@ -126,25 +157,34 @@ public class XTankUI {
 		System.out.println(yCoord);
 		for (int i = 0; i < otherTanks.size(); i++) {
 			if (!otherTanks.get(i).getUID().equals(tank.getUID())) {
-				if (xCoord <= otherTanks.get(i).getX() + 25 && xCoord <= otherTanks.get(i).getX() - 25 
-					    && yCoord <= otherTanks.get(i).getY() + 25 && yCoord >= otherTanks.get(i).getY() - 25 ) {
-						System.out.println("Shot!");
+				if (xCoord <= otherTanks.get(i).getX() + 25 && xCoord <= otherTanks.get(i).getX() - 25
+						&& yCoord <= otherTanks.get(i).getY() + 25 && yCoord >= otherTanks.get(i).getY() - 25) {
+					System.out.println("Shot!");
 				}
 			}
-			
+
 		}
 		canvas.redraw();
 	}
-	
+
+	/**
+	 * This sets the bullet's direction
+	 */
 	public void setBulletDirection() {
 		this.tank.setBulletDirection();
 	}
-	
+
+	/**
+	 * This sets the bullet coordinates
+	 */
 	public void setBulletCoords() {
 		this.tank.setBullet();
 	}
-	
 
+	/**
+	 * This starts the UI and draws the battlefield and it also handles the movement
+	 * of the tanks and calls a runnable that runs the threads read from the server.
+	 */
 	public void start() {
 		display = new Display();
 		shell = new Shell(display);
@@ -154,8 +194,8 @@ public class XTankUI {
 		canvas = new Canvas(shell, SWT.NO_BACKGROUND);
 		canvas.setSize(900, 600);
 		shell.setSize(900, 600);
-		Image image = new Image(display, "dclaveau.png");
-		
+		Image image = getImage();
+
 		canvas.addPaintListener(event -> {
 			event.gc.fillRectangle(canvas.getBounds());
 			event.gc.drawImage(image, 0, 0, image.getBounds().width, image.getBounds().height, 0, 0, 900, 600);
@@ -202,6 +242,9 @@ public class XTankUI {
 			}
 		});
 
+		/**
+		 * This handles all the tank actions in the UI.
+		 */
 		canvas.addKeyListener(new KeyListener() {
 			public void keyPressed(KeyEvent e) {
 
@@ -233,13 +276,13 @@ public class XTankUI {
 
 							// Draw the ball
 							event.gc.fillOval(tank.getBullet().getX(), tank.getBullet().getY(), 50, 50);
-							
+
 						}
 					});
 					Runnable runnable1 = new Runnable() {
 						public void run() {
 							animate();
-							
+
 							display.timerExec(50, this);
 						}
 					};
@@ -279,6 +322,10 @@ public class XTankUI {
 
 	}
 
+	/**
+	 * This gets a random image from an image list 
+	 * to set as a canvas background.
+	 */
 	private Image getImage() {
 		ArrayList<Image> images = new ArrayList<Image>();
 		images.add(new Image(display, "gravel.png"));
@@ -291,6 +338,9 @@ public class XTankUI {
 		return images.get(select);
 	}
 
+	/**
+	 * This checks for collisions between tanks.
+	 */
 	private boolean checkCollisions() {
 		boolean check = false;
 		for (int i = 0; i < getOtherTanks().size(); i++) {
@@ -305,18 +355,32 @@ public class XTankUI {
 		return false;
 	}
 
+	/**
+	 * gets an array of all other tank objects/client objects.
+	 */
 	private ArrayList<Tank> getOtherTanks() {
 		return this.otherTanks;
 	}
 
+	/**
+	 * adds a tank object to the tank's list
+	 */
 	private void addTank(Tank tank) {
 		this.otherTanks.add(tank);
 	}
 
+	/**
+	 * This removes the tank at the given 
+	 * index when it gets destroyed.
+	 */
 	private void removeTank(int i) {
 		this.otherTanks.remove(i);
 	}
 
+	/**
+	 * This is the runner that runs the threads coming from the server
+	 * and does the main communication between the UI and server.
+	 */
 	class Runner implements Runnable {
 		public void run() {
 			try {

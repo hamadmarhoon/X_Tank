@@ -2,6 +2,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.KeyEvent;
@@ -13,6 +15,8 @@ public class Tank implements Serializable {
 	private int yCoord;
 	private int direction;
 	private List<Integer> color;
+	
+	UUID uuid = UUID.randomUUID();
 	
 	// tank body
 	private int baseXDiff = 0;
@@ -36,6 +40,10 @@ public class Tank implements Serializable {
 		yCoord = y;
 		direction = dir;
 		color = generateColor();
+	}
+	
+	public UUID getUID() {
+		return uuid;
 	}
 
 	private List<Integer> generateColor() {
@@ -219,6 +227,9 @@ public class Tank implements Serializable {
 	}
 	
 	public boolean collision(Tank enemyTank) {
+		if (getUID().equals(enemyTank.getUID())) {
+			return false;
+		}
 		int minX;
 		int maxX;
 		int minY;
@@ -229,53 +240,55 @@ public class Tank implements Serializable {
 		int enemyMaxY;
 		
 		if (getDirection() == 0) {
-			minY = getCenter().get(1) - 55;
+			minY = getCenter().get(1) - 50;
 			maxY = getCenter().get(1) + 70;
-			minX = getCenter().get(0) - 30;
-			maxX = getCenter().get(0) + 30;
+			minX = getCenter().get(0) - 25;
+			maxX = getCenter().get(0) + 25;
 		} else if (getDirection() == 1) {
-			minY = getCenter().get(1) - 30;
-			maxY = getCenter().get(1) + 30;
-			minX = getCenter().get(0) - 55;
+			minY = getCenter().get(1) - 25;
+			maxY = getCenter().get(1) + 25;
+			minX = getCenter().get(0) - 50;
 			maxX = getCenter().get(0) + 70;
 		} else if (getDirection() == 2) {
-			minY = getCenter().get(1) + 55;
+			minY = getCenter().get(1) + 50;
 			maxY = getCenter().get(1) - 70;
-			minX = getCenter().get(0) + 30;
-			maxX = getCenter().get(0) - 30;
+			minX = getCenter().get(0) + 25;
+			maxX = getCenter().get(0) - 25;
 		} else {
-			minY = getCenter().get(1) - 30;
-			maxY = getCenter().get(1) + 30;
-			minX = getCenter().get(0) + 55;
+			minY = getCenter().get(1) - 25;
+			maxY = getCenter().get(1) + 25;
+			minX = getCenter().get(0) + 50;
 			maxX = getCenter().get(0) - 70;
 		}
 		
 		if (enemyTank.getDirection() == 0) {
-			enemyMinY = enemyTank.getCenter().get(1) - 55;
+			enemyMinY = enemyTank.getCenter().get(1) - 50;
 			enemyMaxY = enemyTank.getCenter().get(1) + 70;
-			enemyMinX = enemyTank.getCenter().get(0) - 30;
-			enemyMaxX = enemyTank.getCenter().get(0) + 30;
+			enemyMinX = enemyTank.getCenter().get(0) - 25;
+			enemyMaxX = enemyTank.getCenter().get(0) + 25;
 		} else if (enemyTank.getDirection() == 1) {
-			enemyMinY = enemyTank.getCenter().get(1) - 30;
-			enemyMaxY = enemyTank.getCenter().get(1) + 30;
-			enemyMinX = enemyTank.getCenter().get(0) - 55;
+			enemyMinY = enemyTank.getCenter().get(1) - 25;
+			enemyMaxY = enemyTank.getCenter().get(1) + 25;
+			enemyMinX = enemyTank.getCenter().get(0) - 50;
 			enemyMaxX = enemyTank.getCenter().get(0) + 70;
 		} else if (enemyTank.getDirection() == 2) {
-			enemyMinY = enemyTank.getCenter().get(1) + 55;
+			enemyMinY = enemyTank.getCenter().get(1) + 50;
 			enemyMaxY = enemyTank.getCenter().get(1) - 70;
-			enemyMinX = enemyTank.getCenter().get(0) + 30;
-			enemyMaxX = enemyTank.getCenter().get(0) - 30;
+			enemyMinX = enemyTank.getCenter().get(0) + 25;
+			enemyMaxX = enemyTank.getCenter().get(0) - 25;
 		} else {
-			enemyMinY = enemyTank.getCenter().get(1) - 30;
-			enemyMaxY = enemyTank.getCenter().get(1) + 30;
-			enemyMinX = enemyTank.getCenter().get(0) + 55;
+			enemyMinY = enemyTank.getCenter().get(1) - 25;
+			enemyMaxY = enemyTank.getCenter().get(1) + 25;
+			enemyMinX = enemyTank.getCenter().get(0) + 50;
 			enemyMaxX = enemyTank.getCenter().get(0) - 70;
 		}
 	
-		if (enemyMaxY == maxY || enemyMaxY == minY || enemyMaxX == maxX || enemyMaxX == minX ||
-			enemyMinY == maxY || enemyMinY == minY || enemyMinX == maxX || enemyMinX == minX) {
-			return true;
-		}
+		  if (((enemyMaxY == maxY || enemyMaxY == minY) && (enemyMaxX == maxX || enemyMaxX == minX)) || 
+		            ((enemyMinY == maxY || enemyMinY == minY) && (enemyMinX == maxX || enemyMinX == minX)) ||
+		            ((enemyMaxY == maxX || enemyMaxY == minX) && (enemyMaxX == maxY || enemyMaxX == minY)) ||
+		            ((enemyMinY == maxX || enemyMinY == minX) && (enemyMinX == maxY || enemyMinX == minY))) {
+		            return true;
+		        }
 		return false;
 	}
 

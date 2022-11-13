@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+import java.util.Random;
 import java.util.Set;
 
 import javax.xml.crypto.dsig.keyinfo.KeyValue;
@@ -49,10 +50,16 @@ public class XTankUI
 	
 	private void tankX(int num) {
 		this.tank.incrementX(num);
+		if (checkCollisions()) {
+			this.tank.incrementX(-num);
+		}
 	}
 	
 	private void tankY(int num) {
 		this.tank.incrementY(num);
+		if (checkCollisions()) {
+			this.tank.incrementX(-num);
+		}
 	}
 	
 	private void writeTank() throws IOException {
@@ -60,13 +67,27 @@ public class XTankUI
 		this.out.writeObject(getTank());
 	}
 	
+	public void animateFiring() {
+		
+		Runnable runnable1 = new Runnable() {
+			public void run() {
+		        animate();
+		        display.timerExec(10, this);
+		      }
+		    };
+
+	    display.timerExec(10, runnable1);
+	    display.timerExec(-1, runnable1);
+	}
+	      
+	
 	public void start()
 	{
 		display = new Display();
 		shell = new Shell(display);
 		shell.setText("xtank");
 		shell.setLayout(new FillLayout());
-	
+		
 		canvas = new Canvas(shell, SWT.NO_BACKGROUND);
 
 		canvas.addPaintListener(event -> {
@@ -81,14 +102,16 @@ public class XTankUI
 			
 			if (otherTanks.size() > 0) {
 				for (int i = 0; i < otherTanks.size(); i++) {
-					event.gc.setBackground(new Color(getOtherTanks().get(i).getColor().get(0), getOtherTanks().get(i).getColor().get(1), getOtherTanks().get(i).getColor().get(2)));
-					event.gc.fillRectangle(getOtherTanks().get(i).getX() - getOtherTanks().get(i).getBaseX(), getOtherTanks().get(i).getY() - getOtherTanks().get(i).getBaseY(), 
-							getOtherTanks().get(i).getTankWidth(), getOtherTanks().get(i).getTankHeight());
-					event.gc.setBackground(shell.getDisplay().getSystemColor(SWT.COLOR_BLACK));
-					event.gc.fillOval(getOtherTanks().get(i).getX() + getOtherTanks().get(i).getOvalXPosition(), getOtherTanks().get(i).getY() + getOtherTanks().get(i).getOvalYPosition(), 40, 40);
-					event.gc.setLineWidth(4);
-					event.gc.drawLine(getOtherTanks().get(i).getX() + getOtherTanks().get(i).getBarrelX1(), getOtherTanks().get(i).getY() + getOtherTanks().get(i).getBarrelY1(), getOtherTanks().get(i).getX()
-							+ getOtherTanks().get(i).getBarrelX2(), getOtherTanks().get(i).getY() + getOtherTanks().get(i).getBarrelY2());
+							if (!getTank().getUID().equals(getOtherTanks().get(i).getUID())) {
+							event.gc.setBackground(new Color(getOtherTanks().get(i).getColor().get(0), getOtherTanks().get(i).getColor().get(1), getOtherTanks().get(i).getColor().get(2)));
+							event.gc.fillRectangle(getOtherTanks().get(i).getX() - getOtherTanks().get(i).getBaseX(), getOtherTanks().get(i).getY() - getOtherTanks().get(i).getBaseY(), 
+									getOtherTanks().get(i).getTankWidth(), getOtherTanks().get(i).getTankHeight());
+							event.gc.setBackground(shell.getDisplay().getSystemColor(SWT.COLOR_BLACK));
+							event.gc.fillOval(getOtherTanks().get(i).getX() + getOtherTanks().get(i).getOvalXPosition(), getOtherTanks().get(i).getY() + getOtherTanks().get(i).getOvalYPosition(), 40, 40);
+							event.gc.setLineWidth(4);
+							event.gc.drawLine(getOtherTanks().get(i).getX() + getOtherTanks().get(i).getBarrelX1(), getOtherTanks().get(i).getY() + getOtherTanks().get(i).getBarrelY1(), getOtherTanks().get(i).getX()
+									+ getOtherTanks().get(i).getBarrelX2(), getOtherTanks().get(i).getY() + getOtherTanks().get(i).getBarrelY2());
+					}
 				}
 			}
 			
@@ -106,24 +129,32 @@ public class XTankUI
 
 		canvas.addKeyListener(new KeyListener() {
 			public void keyPressed(KeyEvent e) {
-				// update tank location
 				
+				// update tank location
 				if (e.keyCode == SWT.ARROW_RIGHT) {
-					checkCollisions();
 					tank.setTankFields(25, -25, 100, 50, 9, 30, 50, 50, 90, 50);
 					tankX(-directionX);
 				} else if (e.keyCode == SWT.ARROW_LEFT) {
-					checkCollisions();
 					tank.setTankFields(25, -25, 100, 50, 0, 30, 0, 50, -40, 50);
 					tankX(directionX);
 				} else if (e.keyCode == SWT.ARROW_UP) {
-					checkCollisions();
 					tank.setTankFields(0, 0, 50, 100, 5, 25, 25, 25, 25, -15);
 					tankY(directionY);
 				} else if (e.keyCode == SWT.ARROW_DOWN) {
-					checkCollisions();
 					tank.setTankFields(0, 0, 50, 100, 5, 35, 25, 75, 25, 115);
 					tankY(-directionY);
+				}
+				else if (e.keyCode == SWT.SPACE) {
+					canvas.addPaintListener(new PaintListener() {
+					      public void paintControl(PaintEvent event) {
+					        // Set the color of the ball
+					        event.gc.setBackground(shell.getDisplay().getSystemColor(SWT.COLOR_RED));
+
+					        // Draw the ball
+					        event.gc.fillOval(tank.getX(), tank.getY(), 50, 50);
+					      }
+					});
+					animateFiring();
 				}
 				try {
 					out.writeInt(0);
@@ -158,11 +189,52 @@ public class XTankUI
 		
 	}
 	
-	private void checkCollisions() {
+	public void animate() {
+	    // Determine the ball's location
+	    bullet.incrementX(directionX);
+	    bullet.incrementY(directionY);
+
+	    // Determine out of bounds
+	    Rectangle rect = canvas.getClientArea();
+	    if (bullet.getX() < 0) {
+	      bullet.setX(0);
+	      bullet.setDirection(1);
+	    } else if (bullet.getX() > rect.width - 600) {
+	      bullet.setX(rect.width - 600);
+	      bullet.setDirection(-1);
+	    }
+	    if (bullet.getY() < 0) {
+	      bullet.setY(0);
+	      bullet.setDirection(1);
+	    } else if (bullet.getY() > rect.height - 600) {
+	      bullet.setY(rect.height - 600);
+	      bullet.setDirection(-1);
+	    }
+	    canvas.redraw();
+	}
+	
+	private Image getImage() {
+        ArrayList<Image> images = new ArrayList<Image>();
+        images.add(new Image(display, "gravel.png"));
+        images.add(new Image(display, "dclaveau.png"));
+        images.add(new Image(display, "grass.png"));
+        images.add(new Image(display, "sand.png"));
+        
+        Random rand = new Random();
+        int select = rand.nextInt(0, 4);
+        return images.get(select);
+    }
+
+	
+	private boolean checkCollisions() {
 		for (int i = 0; i < getOtherTanks().size(); i++) {
 			boolean check = tank.collision(getOtherTanks().get(i));
+			if (check == true) {
+				return true;
+			}
 			System.out.println(check);
 		}
+		return false;
 	}
 	
 	private ArrayList<Tank> getOtherTanks() {
@@ -188,16 +260,19 @@ public class XTankUI
 					
 					int zero = in.readInt();
 					otherTank = (Tank) in.readObject();
-					
+										
 					for (int i = 0; i < getOtherTanks().size(); i++) {
-						if (otherTank.getX() == getOtherTanks().get(i).getX() || otherTank.getY() == getOtherTanks().get(i).getY()) {
+						if (getTank().getUID().equals(getOtherTanks().get(i).getUID())) {
 							removeTank(i);
 						}
 					}
-					
-					if (!getOtherTanks().contains(otherTank)) {
-						addTank(otherTank);
+					for (int i = 0; i < getOtherTanks().size(); i++) {
+						if (otherTank.getUID().equals(getOtherTanks().get(i).getUID())) {
+							removeTank(i);
+							
+						}
 					}
+					addTank(otherTank);
 					System.out.println(otherTanks);
 				
 				}	

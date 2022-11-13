@@ -2,6 +2,7 @@ public class Bullet {
 
 	private int xCoord;
 	private int yCoord;
+	private int direction;
 
 	public Bullet(int x, int y) {
 		this.xCoord = x;
@@ -22,6 +23,14 @@ public class Bullet {
 
 	public int getY() {
 		return yCoord;
+	}
+	
+	public int getDirection() {
+		return this.direction;
+	}
+	
+	public void setDirection(int direction) {
+		this.direction = direction;
 	}
 
 	public void incrementX(int x) {

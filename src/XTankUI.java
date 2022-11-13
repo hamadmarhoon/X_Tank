@@ -1,4 +1,8 @@
-
+/**
+ * This is the XTankUI Class where we create the user interface and
+ * and draw the tanks from all clients.
+ * 
+ */
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -13,7 +17,6 @@ import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
@@ -38,6 +41,15 @@ public class XTankUI {
 	ObjectOutputStream out;
 	Tank tank;
 
+	/**
+	 * The constructor creates a tank object and bullet object
+	 * 
+	 * @param in
+	 * @param out
+	 * @param initialX
+	 * @param initialY
+	 * @throws IOException
+	 */
 	public XTankUI(ObjectInputStream in, ObjectOutputStream out, int initialX, int initialY) throws IOException {
 		this.in = in;
 		this.out = out;

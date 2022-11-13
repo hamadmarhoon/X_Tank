@@ -110,16 +110,15 @@ public class XTankUI {
 		incrementBullet(10);
 		int xCoord = getBullet().getX();
 		int yCoord = getBullet().getY();
-		System.out.println(xCoord);
-		System.out.println(yCoord);
-		for (int i = 0; i < otherTanks.size(); i++) {
-			if (!otherTanks.get(i).getUID().equals(tank.getUID())) {
-				if (xCoord <= otherTanks.get(i).getX() + 25 && xCoord <= otherTanks.get(i).getX() - 25 
-					    && yCoord <= otherTanks.get(i).getY() + 25 && yCoord >= otherTanks.get(i).getY() - 25 ) {
-						System.out.println("Shot!");
+		boolean check = false;
+		for (int i = 0; i < getOtherTanks().size(); i++) {
+			if (!tank.getUID().equals(getOtherTanks().get(i).getUID())) {
+				check = tank.getBullet().getBounds().intersects((getOtherTanks().get(i).getBullet().getBounds()));
+				if (check == true) {
+					otherTanks.get(i).IGotShot();
+					System.out.println("Shot!");
 				}
 			}
-			
 		}
 		canvas.redraw();
 	}
@@ -144,38 +143,45 @@ public class XTankUI {
 		shell.setSize(900, 600);
 		Image image = new Image(display, "dclaveau.png");
 		
+		
+		
 		canvas.addPaintListener(event -> {
-			event.gc.fillRectangle(canvas.getBounds());
-			event.gc.drawImage(image, 0, 0, image.getBounds().width, image.getBounds().height, 0, 0, 900, 600);
-			event.gc.setBackground(new Color(tank.getColor().get(0), tank.getColor().get(1), tank.getColor().get(2)));
-			event.gc.fillRectangle(tank.getX() - tank.getBaseX(), tank.getY() - tank.getBaseY(), tank.getTankWidth(),
-					tank.getTankHeight());
-			event.gc.setBackground(shell.getDisplay().getSystemColor(SWT.COLOR_BLACK));
-			event.gc.fillOval(tank.getX() + tank.getOvalXPosition(), tank.getY() + tank.getOvalYPosition(), 40, 40);
-			event.gc.setLineWidth(4);
-			event.gc.drawLine(tank.getX() + tank.getBarrelX1(), tank.getY() + tank.getBarrelY1(),
-					tank.getX() + tank.getBarrelX2(), tank.getY() + tank.getBarrelY2());
-
-			if (otherTanks.size() > 0) {
-				for (int i = 0; i < otherTanks.size(); i++) {
-					if (!getTank().getUID().equals(getOtherTanks().get(i).getUID())) {
-						event.gc.setBackground(new Color(getOtherTanks().get(i).getColor().get(0),
-								getOtherTanks().get(i).getColor().get(1), getOtherTanks().get(i).getColor().get(2)));
-						event.gc.fillRectangle(getOtherTanks().get(i).getX() - getOtherTanks().get(i).getBaseX(),
-								getOtherTanks().get(i).getY() - getOtherTanks().get(i).getBaseY(),
-								getOtherTanks().get(i).getTankWidth(), getOtherTanks().get(i).getTankHeight());
-						event.gc.setBackground(shell.getDisplay().getSystemColor(SWT.COLOR_BLACK));
-						event.gc.fillOval(getOtherTanks().get(i).getX() + getOtherTanks().get(i).getOvalXPosition(),
-								getOtherTanks().get(i).getY() + getOtherTanks().get(i).getOvalYPosition(), 40, 40);
-						event.gc.setLineWidth(4);
-						event.gc.drawLine(getOtherTanks().get(i).getX() + getOtherTanks().get(i).getBarrelX1(),
-								getOtherTanks().get(i).getY() + getOtherTanks().get(i).getBarrelY1(),
-								getOtherTanks().get(i).getX() + getOtherTanks().get(i).getBarrelX2(),
-								getOtherTanks().get(i).getY() + getOtherTanks().get(i).getBarrelY2());
-					}
+			
+				event.gc.fillRectangle(canvas.getBounds());
+				event.gc.drawImage(image, 0, 0, image.getBounds().width, image.getBounds().height, 0, 0, 900, 600);
+				event.gc.setBackground(new Color(tank.getColor().get(0), tank.getColor().get(1), tank.getColor().get(2)));
+				event.gc.fillRectangle(tank.getX() - tank.getBaseX(), tank.getY() - tank.getBaseY(), tank.getTankWidth(),
+						tank.getTankHeight());
+				event.gc.setBackground(shell.getDisplay().getSystemColor(SWT.COLOR_BLACK));
+				event.gc.fillOval(tank.getX() + tank.getOvalXPosition(), tank.getY() + tank.getOvalYPosition(), 40, 40);
+				event.gc.setLineWidth(4);
+				event.gc.drawLine(tank.getX() + tank.getBarrelX1(), tank.getY() + tank.getBarrelY1(),
+						tank.getX() + tank.getBarrelX2(), tank.getY() + tank.getBarrelY2());
+	
+				if (otherTanks.size() > 0) {
+					for (int i = 0; i < otherTanks.size(); i++) {
+						if (!getTank().getUID().equals(getOtherTanks().get(i).getUID())) {
+							if (!getOtherTanks().get(i).amIShot()) {
+								event.gc.setBackground(new Color(getOtherTanks().get(i).getColor().get(0),
+										getOtherTanks().get(i).getColor().get(1), getOtherTanks().get(i).getColor().get(2)));
+								event.gc.fillRectangle(getOtherTanks().get(i).getX() - getOtherTanks().get(i).getBaseX(),
+										getOtherTanks().get(i).getY() - getOtherTanks().get(i).getBaseY(),
+										getOtherTanks().get(i).getTankWidth(), getOtherTanks().get(i).getTankHeight());
+								event.gc.setBackground(shell.getDisplay().getSystemColor(SWT.COLOR_BLACK));
+								event.gc.fillOval(getOtherTanks().get(i).getX() + getOtherTanks().get(i).getOvalXPosition(),
+										getOtherTanks().get(i).getY() + getOtherTanks().get(i).getOvalYPosition(), 40, 40);
+								event.gc.setLineWidth(4);
+								event.gc.drawLine(getOtherTanks().get(i).getX() + getOtherTanks().get(i).getBarrelX1(),
+										getOtherTanks().get(i).getY() + getOtherTanks().get(i).getBarrelY1(),
+										getOtherTanks().get(i).getX() + getOtherTanks().get(i).getBarrelX2(),
+										getOtherTanks().get(i).getY() + getOtherTanks().get(i).getBarrelY2());
+							}
+							
+						}
+					
 				}
+				canvas.redraw();
 			}
-			canvas.redraw();
 		});
 
 		canvas.addMouseListener(new MouseListener() {
@@ -210,10 +216,10 @@ public class XTankUI {
 					tank.setTankFields(0, 0, 50, 100, 5, 35, 25, 75, 25, 115);
 					tankY(-directionY);
 					tank.changeDirection(e);
+					
 				} else if (e.keyCode == SWT.SPACE) {
 					setBulletDirection();
 					setBulletCoords();
-				} else if (e.keyCode == SWT.SPACE) {
 					canvas.addPaintListener(new PaintListener() {
 						public void paintControl(PaintEvent event) {
 							// Set the color of the ball
@@ -259,6 +265,11 @@ public class XTankUI {
 		Runnable runnable = new Runner();
 		display.asyncExec(runnable);
 		shell.open();
+		
+		if (getTank().amIShot()) {
+			shell.dispose();
+		}
+		
 		while (!shell.isDisposed())
 			if (!display.readAndDispatch())
 				display.sleep();
@@ -304,6 +315,10 @@ public class XTankUI {
 	private void removeTank(int i) {
 		this.otherTanks.remove(i);
 	}
+	
+	private void endUI() {
+		shell.dispose();
+	}
 
 	class Runner implements Runnable {
 		public void run() {
@@ -317,16 +332,27 @@ public class XTankUI {
 
 					for (int i = 0; i < getOtherTanks().size(); i++) {
 						if (getTank().getUID().equals(getOtherTanks().get(i).getUID())) {
+							if (getOtherTanks().get(i).amIShot()) {
+								System.out.println("I'm shot");
+								endUI();
+							}
 							removeTank(i);
 						}
 					}
 					for (int i = 0; i < getOtherTanks().size(); i++) {
 						if (otherTank.getUID().equals(getOtherTanks().get(i).getUID())) {
+							if (otherTank.amIShot()) {
+								System.out.println("I'm shot");
+								endUI();
+							}
 							removeTank(i);
-
+						
 						}
 					}
+					
 					addTank(otherTank);
+					
+					
 					System.out.println(otherTanks);
 
 				}

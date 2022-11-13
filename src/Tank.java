@@ -50,6 +50,10 @@ public class Tank implements Serializable {
 	public void IGotShot() {
 		this.gotShot = true;
 	}
+	
+	public boolean amIShot() {
+		return this.gotShot;
+	}
 
 	private List<Integer> generateColor() {
 		Random rand = new Random();

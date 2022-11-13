@@ -1,3 +1,12 @@
+/*
+Name: Hamad Marhoon and Abdullah Alkhamis
+Class: CSC 335
+Purpose: The XTankServer manages communication between clients.
+		 It will create threads to handle new communcations. All
+		 movements made in each tank are being transmitted into
+		 all other tanks. 
+*/
+
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -20,6 +29,7 @@ import org.eclipse.swt.widgets.Shell;
 
 /**
  * When a client connects, a new thread is started to handle it.
+ * The server handles creating new threads and adding clients to them.
  */
 public class XTankServer {
 	static ArrayList<ObjectOutputStream> sq;
@@ -38,32 +48,6 @@ public class XTankServer {
 
 		shell.open();
 
-		Button startButton = new Button(canvas, SWT.PUSH);
-
-		startButton.setText("Start Game!");
-		startButton.setSize(150, 80);
-		startButton.setBackground(shell.getDisplay().getSystemColor(SWT.COLOR_GREEN));
-		startButton.setLocation(370, 300);
-
-		Label label = new Label(canvas, SWT.PASSWORD);
-		label.setLocation(350, 150);
-		label.setSize(300, 300);
-		label.setText("              Welcome to XTank! \nStart the server once all players join");
-
-		startButton.addSelectionListener(new SelectionAdapter() {
-			public void widgetSelected(SelectionEvent event) {
-				shell.dispose();
-			}
-		});
-
-//		while (!shell.isDisposed()) {
-//
-//            if (!display.readAndDispatch()) {
-//                display.sleep();
-//            }
-//        }
-//        display.dispose();
-
 		System.out.println(InetAddress.getLocalHost());
 		sq = new ArrayList<>();
 		int tankNum = 0;
@@ -78,11 +62,13 @@ public class XTankServer {
 		}
 
 	}
-
-	private void changeStartGame() {
-		this.startGame = false;
-	}
-
+	
+	/*
+	 * XTankManager is a runnable that manages the threads in the server. 
+	 * It connects each client and then creates an input and output stream, 
+	 * which will handle the connections between the server and the client
+	 * It will get movements from other players and then transmit them to the UI.
+	 */
 	private static class XTankManager implements Runnable {
 		private Socket socket;
 		private int tankID;

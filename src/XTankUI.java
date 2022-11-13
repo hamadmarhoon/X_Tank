@@ -66,10 +66,6 @@ public class XTankUI {
 			getTank().setTankFields(25, -25, 100, 50, 0, 30, 0, 50, -40, 50);
 		}
 	} 
-
-	private Tank getTank() {
-		return this.tank;
-	}
 	
 	private int getRandomX() {
 		Random rand = new Random();
@@ -95,6 +91,12 @@ public class XTankUI {
 			getTank().incrementX(-num);
 		}
 	}
+	private void tankGotShot() {
+		this.tank.IGotShot();
+	}
+	private Tank getTank() {
+		return this.tank;
+	}
 
 	private void tankY(int num) {
 		getTank().incrementY(num);
@@ -107,19 +109,41 @@ public class XTankUI {
 		this.out.reset();
 		this.out.writeObject(getTank());
 	}
-
-	public void animateFiring() {
-
-		Runnable runnable1 = new Runnable() {
-			public void run() {
-				animate();
-				display.timerExec(10, this);
-			}
-		};
-
-		display.timerExec(10, runnable1);
-		display.timerExec(-1, runnable1);
+	
+	public void incrementBullet(int num) {
+		this.tank.incrementBullet(num, otherTanks);
 	}
+	
+	public Bullet getBullet() {
+		return this.tank.getBullet();
+	}
+	
+	public void animate() {
+		incrementBullet(10);
+		int xCoord = getBullet().getX();
+		int yCoord = getBullet().getY();
+		System.out.println(xCoord);
+		System.out.println(yCoord);
+		for (int i = 0; i < otherTanks.size(); i++) {
+			if (!otherTanks.get(i).getUID().equals(tank.getUID())) {
+				if (xCoord <= otherTanks.get(i).getX() + 25 && xCoord <= otherTanks.get(i).getX() - 25 
+					    && yCoord <= otherTanks.get(i).getY() + 25 && yCoord >= otherTanks.get(i).getY() - 25 ) {
+						System.out.println("Shot!");
+				}
+			}
+			
+		}
+		canvas.redraw();
+	}
+	
+	public void setBulletDirection() {
+		this.tank.setBulletDirection();
+	}
+	
+	public void setBulletCoords() {
+		this.tank.setBullet();
+	}
+	
 
 	public void start() {
 		display = new Display();
@@ -128,9 +152,13 @@ public class XTankUI {
 		shell.setLayout(new FillLayout());
 
 		canvas = new Canvas(shell, SWT.NO_BACKGROUND);
-		canvas.setSize(600, 600);
+		canvas.setSize(900, 600);
+		shell.setSize(900, 600);
+		Image image = new Image(display, "dclaveau.png");
+		
 		canvas.addPaintListener(event -> {
 			event.gc.fillRectangle(canvas.getBounds());
+			event.gc.drawImage(image, 0, 0, image.getBounds().width, image.getBounds().height, 0, 0, 900, 600);
 			event.gc.setBackground(new Color(tank.getColor().get(0), tank.getColor().get(1), tank.getColor().get(2)));
 			event.gc.fillRectangle(tank.getX() - tank.getBaseX(), tank.getY() - tank.getBaseY(), tank.getTankWidth(),
 					tank.getTankHeight());
@@ -181,25 +209,42 @@ public class XTankUI {
 				if (e.keyCode == SWT.ARROW_RIGHT) {
 					tank.setTankFields(25, -25, 100, 50, 9, 30, 50, 50, 90, 50);
 					tankX(-directionX);
+					tank.changeDirection(e);
 				} else if (e.keyCode == SWT.ARROW_LEFT) {
 					tank.setTankFields(25, -25, 100, 50, 0, 30, 0, 50, -40, 50);
 					tankX(directionX);
+					tank.changeDirection(e);
 				} else if (e.keyCode == SWT.ARROW_UP) {
 					tank.setTankFields(0, 0, 50, 100, 5, 25, 25, 25, 25, -15);
 					tankY(directionY);
+					tank.changeDirection(e);
 				} else if (e.keyCode == SWT.ARROW_DOWN) {
 					tank.setTankFields(0, 0, 50, 100, 5, 35, 25, 75, 25, 115);
 					tankY(-directionY);
+					tank.changeDirection(e);
+				} else if (e.keyCode == SWT.SPACE) {
+					setBulletDirection();
+					setBulletCoords();
 				} else if (e.keyCode == SWT.SPACE) {
 					canvas.addPaintListener(new PaintListener() {
 						public void paintControl(PaintEvent event) {
 							// Set the color of the ball
 							event.gc.setBackground(shell.getDisplay().getSystemColor(SWT.COLOR_RED));
+
 							// Draw the ball
-							event.gc.fillOval(tank.getX(), tank.getY(), 50, 50);
+							event.gc.fillOval(tank.getBullet().getX(), tank.getBullet().getY(), 50, 50);
+							
 						}
 					});
-					animateFiring();
+					Runnable runnable1 = new Runnable() {
+						public void run() {
+							animate();
+							
+							display.timerExec(50, this);
+						}
+					};
+
+					display.timerExec(10, runnable1);
 				}
 				try {
 					out.writeInt(0);
@@ -234,36 +279,12 @@ public class XTankUI {
 
 	}
 
-	public void animate() {
-		// Determine the ball's location
-		bullet.incrementX(directionX);
-		bullet.incrementY(directionY);
-
-		// Determine out of bounds
-		Rectangle rect = canvas.getClientArea();
-		if (bullet.getX() < 0) {
-			bullet.setX(0);
-			bullet.setDirection(1);
-		} else if (bullet.getX() > rect.width - 600) {
-			bullet.setX(rect.width - 600);
-			bullet.setDirection(-1);
-		}
-		if (bullet.getY() < 0) {
-			bullet.setY(0);
-			bullet.setDirection(1);
-		} else if (bullet.getY() > rect.height - 600) {
-			bullet.setY(rect.height - 600);
-			bullet.setDirection(-1);
-		}
-		canvas.redraw();
-	}
-
 	private Image getImage() {
 		ArrayList<Image> images = new ArrayList<Image>();
-		images.add(new Image(display, canvas.getBounds()));
-		images.add(new Image(display, canvas.getBounds()));
-		images.add(new Image(display, canvas.getBounds()));
-		images.add(new Image(display, canvas.getBounds()));
+		images.add(new Image(display, "gravel.png"));
+		images.add(new Image(display, "dclaveau.png"));
+		images.add(new Image(display, "grass.png"));
+		images.add(new Image(display, "sand.png"));
 
 		Random rand = new Random();
 		int select = rand.nextInt(0, 4);

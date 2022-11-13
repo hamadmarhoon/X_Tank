@@ -15,6 +15,7 @@ public class Tank implements Serializable {
 	private int yCoord;
 	private int direction;
 	private List<Integer> color;
+	private Bullet bullet;
 
 	UUID uuid = UUID.randomUUID();
 
@@ -23,7 +24,7 @@ public class Tank implements Serializable {
 	private int baseYDiff = 0;
 	private int tankWidth = 50;
 	private int tankHeight = 100;
-
+	private boolean gotShot;
 	// tank oval
 	private int ovalXPos = 5;
 	private int ovalYPos = 25;
@@ -39,10 +40,15 @@ public class Tank implements Serializable {
 		yCoord = y;
 		direction = dir;
 		color = generateColor();
+		bullet = new Bullet(x, y);
 	}
 
 	public UUID getUID() {
 		return uuid;
+	}
+	
+	public void IGotShot() {
+		this.gotShot = true;
 	}
 
 	private List<Integer> generateColor() {
@@ -60,6 +66,28 @@ public class Tank implements Serializable {
 
 	public void setX(int x) {
 		this.xCoord = x;
+	}
+	
+	public void setBullet() {
+		bullet.setX(xCoord);
+		bullet.setY(yCoord);
+	}
+	
+	public Bullet getBullet() {
+		return bullet;
+	}
+	
+	public void setDirection(int dir) {
+		this.direction = dir;
+	}
+	
+	public void incrementBullet(int num, ArrayList<Tank> otherTanks) {
+		this.bullet.increment(num, otherTanks);
+	}
+	
+	public void setBulletDirection() {
+		System.out.println(direction);
+		this.bullet.setDirection(direction);
 	}
 
 	public void setY(int y) {

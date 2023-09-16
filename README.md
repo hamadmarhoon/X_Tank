@@ -15,11 +15,6 @@ XTank is a multiplayer game where players operate tanks on a variety of terrains
 - Collision detection
 - Varied terrains for gameplay
 
-## Files
-
-- `XTankUI`: This is the main UI class where we create the user interface, handle tank movements, bullet animations, and drawing of tanks.
-- `XTankServer`: This server class manages communication between clients and ensures synchronization of tank movements.
-
 ## Developers
 
 - **Hamad Marhoon** 
